@@ -9,7 +9,7 @@ In your downstream repository, reference this workflow in your `.github/workflow
 ```yaml
 jobs:
   build-publish:
-    uses: org/ci-templates/.github/workflows/deploy.yml@main
+    uses: codengoo/ts-library-action/.github/workflows/deploy.yml@main
     secrets: inherit
     with:
       node-version: '20.x'   # Optional, default: '20.x'
