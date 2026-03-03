@@ -1,0 +1,54 @@
+name: Build & Publish Template
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: Node version to use for the build matrix
+        required: false
+        type: string
+        default: '20.x'
+      publish:
+        description: Set to true to publish the package after a successful build
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      NPM_TOKEN:
+        required: false
+
+jobs:
+  build-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Checkout caller repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node ${{ inputs['node-version'] }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs['node-version'] }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build project
+        run: npm run build
+
+      - name: Publish package
+        if: inputs.publish == true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "NPM_TOKEN is required to publish" >&2
+            exit 1
+          fi
+          npm publish --access public
